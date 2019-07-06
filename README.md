@@ -41,8 +41,8 @@ Assets included:
 
 To run the minify-me script, simply type `node minify.js`.
             
-Follow the command line prompts and type `file`. Wait for the next prompt and type in the name of a file. You can type `index.js` and watch the script remove trailing whitespaces and debuggers.
+Follow the command line prompts and type `file`. Wait for the next prompt and type in the name of a file. You can type `index.js` and watch the script remove trailing/excess whitespaces, `debugger`s and `console.log()`s.
 
 # Still to Come
 
-Does not work without semi colons after functions and variable declarations. Also does not remove comments (these will actually cause errors) or `console.logs` (though these do not cause errors).
+Does not work without semi colons after functions and variable declarations. Also does not remove comments (these will actually cause errors).
