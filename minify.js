@@ -126,6 +126,8 @@ const fileDetection = () =>{
 //     }).then(()=>{exit()})
 // };
 
+
+
 function minify(data){
     //remove all debuggers
     //remove whitespace between everything that isn't a variable or function declaration...
