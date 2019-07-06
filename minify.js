@@ -139,6 +139,7 @@ function minify(data){
     console.log(`${filename} is being minified.`);
     var str = `${content}`;
     var finalContent = str.split("debugger").join("").replace(/\s+/g, ' ');
+    finalContent = finalContent.replace(/console\.log\(([^)]+)\);/igm, ' ');
     console.log(finalContent.length);
     console.log(finalContent);
     console.log('Minification complete.');
