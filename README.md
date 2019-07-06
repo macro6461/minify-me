@@ -47,9 +47,6 @@ Follow the command line prompts and type `file`. Wait for the next prompt and ty
 # Still to Come
 
 Does not work without semi colons after functions and variable declarations. Also does not remove comments (these will actually cause errors) or `console.logs` (though these do not cause errors).
-=======
-
-        - `innerTest.txt`: To test file type validation
         
         
 # Instructions
@@ -61,6 +58,3 @@ Follow the command line prompts and type `file`. Wait for the next prompt and ty
 # Still to Come
 
 Does not work without semi colons after functions and variable declarations. Also does not remove comments (these will actually cause errors) or `console.logs` (though these do not cause errors).
-
-
->>>>>>> bd4a4aa80b2b8e6849cf994d5e1b881022a619c2
