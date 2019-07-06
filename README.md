@@ -14,24 +14,35 @@ Command line app needs cleaning up, the input validations and error handling nee
 
 Assets included:
 
-index.html: Content
+`index.html`: Content
 
-index.js: To show interaction with HTML
+`index.js`: To show interaction with HTML
 
-index.min.js: To show interaction with HTML works even after minification
+`index.min.js`: To show interaction with HTML works even after minification
 
-style.css: Minimal styling for the testing interface
+`style.css`: Minimal styling for the testing interface
 
-minify.js: The minification script
+`minify.js`: The minification script
 
-test.txt: To test file type validation
+`test.txt`: To test file type validation
 
-test (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
+`test` (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
 
-            - test.js: To test file type validation
+   - `test.js`: To test file type validation
 
-            - innerTest (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
+   - `innerTest` (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
             
-                        - innerTest.js: To test file type validation
+        - `innerTest.js`: To test file type validation
 
-                        - innerTest.txt: To test file type validation
+        - `innerTest.txt`: To test file type validation
+        
+        
+# Instructions
+
+To run the minify-me script, simply type `node minify.js`.
+            
+Follow the command line prompts and type `file`. Wait for the next prompt and type in the name of a file. You can type `index.js` and watch the script remove trailing whitespaces and debuggers.
+
+# Still to Come
+
+Does not work without semi colons after functions and variable declarations. Also does not remove comments (these will actually cause errors) or `console.logs` (though these do not cause errors).
