@@ -1,4 +1,6 @@
-'Minify Me' is an experimental minification script written using Node.js.
+# 'Minify Me' 
+
+Minify Me is an experimental minification script written using Node.js.
 
 Includes command line prompts to instruct the user how to conduct the minification and to indicate which file (or directory, coming soon) is to be minified.
 
@@ -13,13 +15,23 @@ Command line app needs cleaning up, the input validations and error handling nee
 Assets included:
 
 index.html: Content
+
 index.js: To show interaction with HTML
+
 index.min.js: To show interaction with HTML works even after minification
+
 style.css: Minimal styling for the testing interface
+
 minify.js: The minification script
+
 test.txt: To test file type validation
+
 test (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
-            test.js: To test file type validation
-            innerTest (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
-                        innerTest.js: To test file type validation
-                        innerTest.txt: To test file type validation
+
+            - test.js: To test file type validation
+
+            - innerTest (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
+            
+                        - innerTest.js: To test file type validation
+
+                        - innerTest.txt: To test file type validation
