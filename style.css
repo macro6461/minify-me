@@ -1,0 +1,33 @@
+body{
+text-align:center;
+}
+
+ul{
+    padding-left: 0px;
+}
+
+li {
+    list-style: none;
+}
+
+.buttonContainer{
+    display: block;
+    margin: auto;
+    width: 400px;
+}
+
+#previous, #next {
+    display: inline-block;
+    border: solid 1px black;
+    background-color: white;
+    padding: 3px;
+    cursor: pointer;
+    width: 100px;
+}
+
+.mySlides{
+    margin: auto;
+    width: 500px;
+    height: 200px;
+    border: solid 1px black;
+}
