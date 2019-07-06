@@ -33,7 +33,6 @@ Assets included:
    - `innerTest` (directory): To test input validation (ignore directories for now). Contains below files/subdirectories
             
         - `innerTest.js`: To test file type validation
-<<<<<<< HEAD
 
         - `innerTest.txt`: To test file type validation
         
@@ -47,20 +46,3 @@ Follow the command line prompts and type `file`. Wait for the next prompt and ty
 # Still to Come
 
 Does not work without semi colons after functions and variable declarations. Also does not remove comments (these will actually cause errors) or `console.logs` (though these do not cause errors).
-=======
-
-        - `innerTest.txt`: To test file type validation
-        
-        
-# Instructions
-
-To run the minify-me script, simply type `node minify.js`.
-            
-Follow the command line prompts and type `file`. Wait for the next prompt and type in the name of a file. You can type `index.js` and watch the script remove trailing whitespaces and debuggers.
-
-# Still to Come
-
-Does not work without semi colons after functions and variable declarations. Also does not remove comments (these will actually cause errors) or `console.logs` (though these do not cause errors).
-
-
->>>>>>> bd4a4aa80b2b8e6849cf994d5e1b881022a619c2
