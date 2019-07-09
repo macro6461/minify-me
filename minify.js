@@ -10,6 +10,7 @@ standard_input.setEncoding('utf-8');
 const generalInfo = "\n***********************\n\nPlease type a JavaScript file name, including the file extension, or directory you'd like to minify. If file is in nested directories, type out full path including file name and extension. If directory is nested, please specify full path. \nAn example directory would be '/project_directory/assets/javascript_files'. \nAn example file would be 'index.js' or '/project_directory/assets/javascript_files/index.js'.  \nType exit to leave.\n\n***********************\n";
 
 const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nType exit to leave.\n\n***********************\n";
+const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by //), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.";
 
 const init = () => {
     console.log(generalSmallInfo);
@@ -61,7 +62,7 @@ const init = () => {
 };
 
 const fileDetection = () =>{
-    console.log("Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.");
+    console.log(fileDetectionPrompt);
     standard_input.on('data', (data)=> {
 
         var extension = data.trim().split(".")[data.trim().split(".").length - 1];
@@ -126,35 +127,90 @@ const fileDetection = () =>{
 //     }).then(()=>{exit()})
 // };
 
+regexAndSemiColons = (str) => {
+
+    var notAtEnd = ['{', '(', ',', ';', ':', '+', '-', '*', '/','&', '|', '`'];
+
+    //remove all debuggers and console.logs
+    var newStr  = str.split("debugger").join("").replace(/console\.log\(([^)]+)\);/igm, ' ');
+    /*use regex to remove '//...' (comment), '\r\n' and '\n' (line breaks), and replace with '\r'. Then split it at every new line break.*/
+    var strArr = newStr.replace(/(\/)\/.*/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
+
+    /*Map over strArr and evaluate where to put ';'*/
+    var finalStr = strArr.map((x)=>{
+
+        /*check if x is just whitespaces (empty lines)*/
+        if (x.replace(/\s/g, '').length <=0){
+            x = ""
+        }
+
+        /*split x into array for validation*/
+        var minArr = x.split("");
+
+        /*if array.length is 0, ignore it, otherwise check if the last element is one of the notAtEnd items and if it is, don't add ';'. Otherwise do so.*/
+        if (minArr.length > 0 && !notAtEnd.includes(minArr[minArr.length -1])){
+            minArr.push(';');
+        }
+
+        var final = minArr.join("");
+        return final;
+    }).join("");
+
+    finalStr = finalStr.replace(/\s+/g, ' ');
+
+    return finalStr;
+};
+
+
 
 
 function minify(data){
-    //remove all debuggers
-    //remove whitespace between everything that isn't a variable or function declaration...
-    //...which means leave space between 'var', 'let', 'const', 'function'
-    //still needs ; after functions, and added event listeners.
     const {filename, directory, content} = data;
-    console.log(content.length);
+    var before = content.length;
+
     console.log('********************************************');
     console.log(`${filename} is being minified.`);
+
     var str = `${content}`;
-    var finalContent = str.split("debugger").join("").replace(/\s+/g, ' ');
-    finalContent = finalContent.replace(/console\.log\(([^)]+)\);/igm, ' ');
-    console.log(finalContent.length);
-    console.log(finalContent);
-    console.log('Minification complete.');
+    //start logging time for function
+    var timeStart = process.hrtime()[1]/1000000;
+    //remove comments, add semicolons
+    str = regexAndSemiColons(str);
+    var timeEnd = process.hrtime()[1]/1000000;
+    var time = timeEnd - timeStart;
+
+    var after = str.length;
+    var percentage = percentCalc(before, after);
+    if (after > before) {
+        str = `${content}`
+    }
+    console.log(`Minification complete after ${Math.ceil(time)/100} milliseconds.`);
+    console.log('size BEFORE: ' + before);
+    console.log('size AFTER: ' + after);
+    console.log('Minification resulted in: ' + percentage);
     console.log('********************************************');
     try {
         let newFileArr = filename.split(".");
         newFileArr.splice(newFileArr.length - 1, 0, '.min.');
         var finalFileName = newFileArr.join("");
-        console.log(finalFileName);
-        fs.writeFileSync(directory + '/' + finalFileName, finalContent)
+        console.log('New file saved as: ' + finalFileName);
+        fs.writeFileSync(directory + '/' + finalFileName, str)
         //file written successfully
-      } catch (err) {
+    } catch (err) {
         console.error(err)
-      }
+    }
     exit();
+};
+
+percentCalc = (a, b)=>{
+  var diff = a - b;
+  var percentage;
+  if (diff > 0){
+      percentage = `${Math.round((diff / a)*100)}% content size DECREASE.`
+  } else {
+      percentage = `${Math.round((diff / b)*100)}% content size INCREASE. Original file preserved.`
+  }
+  return percentage;
 };
 
 const exit = () =>{
