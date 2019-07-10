@@ -7,11 +7,13 @@ var standard_input = process.stdin;
 
 standard_input.setEncoding('utf-8');
 
+var withSemiColons = false;
+
 const generalInfo = "\n***********************\n\nPlease type a JavaScript file name, including the file extension, or directory you'd like to minify. If file is in nested directories, type out full path including file name and extension. If directory is nested, please specify full path. \nAn example directory would be '/project_directory/assets/javascript_files'. \nAn example file would be 'index.js' or '/project_directory/assets/javascript_files/index.js'.  \nType exit to leave.\n\n***********************\n";
 
 const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nType exit to leave.\n\n***********************\n";
 const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by //), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.";
-
+const checkInputForSemiColonFunctionalityPrompt= "Did you want to enable semi-colon appending? This could result in error(s) if you have instances of .then() starting on a new line.\nIf you want to use semi-colon appending, type 'yes', otherwise type 'no'. Typing no means you have included the semi-colons yourself.\nFYI: Typing 'file no-semi' or 'file semi' will enable semi-colon appending from the getgo and skip this prompt.";
 const init = () => {
     console.log(generalSmallInfo);
 
@@ -19,8 +21,13 @@ const init = () => {
 
         if (data.trim() === 'exit') {
             exit();
+        } else if (data.trim() === 'file no-semi') {
+            fileDetection();
+        } else if (data.trim() === 'file semi') {
+            withSemiColons = true;
+            fileDetection();
         } else if (data.trim() === 'file'){
-            fileDetection()
+            checkInputForSemiColonFunctionality()
         } else if (data.trim() === 'directory'){
 
         } else {
@@ -61,9 +68,31 @@ const init = () => {
     })
 };
 
+checkInputForSemiColonFunctionality = () => {
+    console.log(checkInputForSemiColonFunctionalityPrompt);
+    standard_input.on('data', (data)=> {
+
+        if (data.trim() === 'exit') {
+            exit();
+        } else if (data.trim() === 'yes') {
+            withSemiColons = true;
+            fileDetection();
+        } else if (data.trim() === 'no') {
+            fileDetection();
+        } else {
+            console.log('Input is invalid.');
+            console.log(generalSmallInfo);
+        }
+    })
+}
+
 const fileDetection = () =>{
     console.log(fileDetectionPrompt);
     standard_input.on('data', (data)=> {
+
+        if (data.trim() === 'exit') {
+            exit();
+        }
 
         var extension = data.trim().split(".")[data.trim().split(".").length - 1];
 
@@ -137,24 +166,31 @@ regexAndSemiColons = (str) => {
     var strArr = newStr.replace(/(\/)\/.*/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
 
     /*Map over strArr and evaluate where to put ';'*/
-    var finalStr = strArr.map((x)=>{
 
-        /*check if x is just whitespaces (empty lines)*/
-        if (x.replace(/\s/g, '').length <=0){
-            x = ""
-        }
+    var finalStr;
 
-        /*split x into array for validation*/
-        var minArr = x.split("");
+    if (withSemiColons){
+        finalStr = strArr.map((x)=>{
 
-        /*if array.length is 0, ignore it, otherwise check if the last element is one of the notAtEnd items and if it is, don't add ';'. Otherwise do so.*/
-        if (minArr.length > 0 && !notAtEnd.includes(minArr[minArr.length -1])){
-            minArr.push(';');
-        }
+            /*check if x is just whitespaces (empty lines)*/
+            if (x.replace(/\s/g, '').length <=0){
+                x = ""
+            }
 
-        var final = minArr.join("");
-        return final;
-    }).join("");
+            /*split x into array for validation*/
+            var minArr = x.split("");
+
+            /*if array.length is 0, ignore it, otherwise check if the last element is one of the notAtEnd items and if it is, don't add ';'. Otherwise do so.*/
+            if (minArr.length > 0 && !notAtEnd.includes(minArr[minArr.length -1])){
+                minArr.push(';');
+            }
+
+            var final = minArr.join("");
+            return final;
+        }).join("");
+    } else {
+        finalStr = strArr.join("");
+    }
 
     finalStr = finalStr.replace(/\s+/g, ' ');
 
