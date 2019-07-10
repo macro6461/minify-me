@@ -9,156 +9,162 @@ standard_input.setEncoding('utf-8');
 
 var withSemiColons = false;
 
-const generalInfo = "\n***********************\n\nPlease type a JavaScript file name, including the file extension, or directory you'd like to minify. If file is in nested directories, type out full path including file name and extension. If directory is nested, please specify full path. \nAn example directory would be '/project_directory/assets/javascript_files'. \nAn example file would be 'index.js' or '/project_directory/assets/javascript_files/index.js'.  \nType exit to leave.\n\n***********************\n";
+var fileOrDirectory = null;
 
 const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nType exit to leave.\n\n***********************\n";
 const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by //), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.";
-const checkInputForSemiColonFunctionalityPrompt= "Did you want to enable semi-colon appending? This could result in error(s) if you have instances of .then() starting on a new line.\nIf you want to use semi-colon appending, type 'yes', otherwise type 'no'. Typing no means you have included the semi-colons yourself.\nFYI: Typing 'file no-semi' or 'file semi' will enable semi-colon appending from the getgo and skip this prompt.";
+
+const directoryDetectionPrompt = "Please type the name of the directory.\nAll JavaScript files in the directory will be minified. \nAll other file types and nested directories will be ignored.";
+
+const checkInputForSemiColonFunctionalityPrompt= "Did you want to enable semi-colon appending? This could result in error(s) if you have instances of .then() starting on a new line.\nIf you want to use semi-colon appending, type 'yes', otherwise type 'no'. Typing no means you have included the semi-colons yourself.\nFYI: Adding ' no-semi' or ' semi' to your initial input will enable semi-colon appending from the getgo and skip this prompt.\n Example: 'file no-semi' or 'directory no-semi";
 const init = () => {
     console.log(generalSmallInfo);
 
     standard_input.on('data', (data)=> {
 
-        if (data.trim() === 'exit') {
+        if (data.trim().toLowerCase() === 'exit') {
             exit();
-        } else if (data.trim() === 'file no-semi') {
+        } else if (data.trim().toLowerCase() === 'file no-semi') {
+            fileOrDirectory = 'file';
             fileDetection();
-        } else if (data.trim() === 'file semi') {
+        } else if (data.trim().toLowerCase()  === 'file semi') {
+            fileOrDirectory = 'file';
             withSemiColons = true;
             fileDetection();
-        } else if (data.trim() === 'file'){
-            checkInputForSemiColonFunctionality()
-        } else if (data.trim() === 'directory'){
-
+        } else if (data.trim().toLowerCase()  === 'file'){
+            fileOrDirectory = 'file';
+            checkInputForSemiColonFunctionality('file')
+        } else if (data.trim().toLowerCase()  === 'directory'){
+            fileOrDirectory = 'directory';
+            checkInputForSemiColonFunctionality('directory')
+        } else if (data.trim().toLowerCase()  === 'directory no-semi'){
+            fileOrDirectory = 'directory';
+            directoryDetection()
+        } else if (data.trim().toLowerCase()  === 'directory semi'){
+            fileOrDirectory = 'directory';
+            withSemiColons = true;
+            directoryDetection()
         } else {
             console.log('Input is invalid.');
             console.log(generalSmallInfo);
         }
-
-        // var isDirectory = fs.existsSync(data.trim()) && fs.lstatSync(data.trim()).isDirectory();
-        //
-        // var isFile = fs.existsSync(data.trim()) && fs.lstatSync(data.trim()).isFile();
-        //
-        // var extension = data.trim().split(".")[data.trim().split(".").length - 1];
-        //
-        // if (!isDirectory && isFile){
-        //     if (extension === 'js' || extension === 'jsx') {
-        //         console.log('You typed a JavaScript file name');
-        //         readFiles([data.trim()], data);
-        //         // exit()
-        //     } else {
-        //         console.log(`\n '${data.trim()}' is an INVALID file or file type.`);
-        //         console.log(generalInfo);
-        //     }
-        // } else if (isDirectory) {
-        //     var directory = data.trim().indexOf('/') === 0 ? dir + data.trim() : dir + '/' + data.trim();
-        //     fs.readdir(directory, async (err, files)=>{
-        //         if (err){
-        //             console.log('\n' + `'${directory}'` + ' is an INVALID directory.');
-        //             console.log(generalInfo);
-        //         } else {
-        //             console.log(data);
-        //             return readFiles(files, data)
-        //         }
-        //     })
-        // } else {
-        //     console.log('Neither file nor directory.');
-        //     console.log(generalInfo);
-        // }
     })
 };
 
-checkInputForSemiColonFunctionality = () => {
+checkInputForSemiColonFunctionality = (x) => {
     console.log(checkInputForSemiColonFunctionalityPrompt);
     standard_input.on('data', (data)=> {
 
-        if (data.trim() === 'exit') {
+        if (data.trim().toLowerCase()  === 'exit') {
             exit();
-        } else if (data.trim() === 'yes') {
+        } else if (data.trim().toLowerCase()  === 'yes') {
             withSemiColons = true;
-            fileDetection();
-        } else if (data.trim() === 'no') {
-            fileDetection();
+            x === 'file' ? fileDetection() : directoryDetection();
+        } else if (data.trim().toLowerCase()  === 'no') {
+            x === 'file' ? fileDetection() : directoryDetection();
         } else {
             console.log('Input is invalid.');
-            console.log(generalSmallInfo);
+            console.log("Please type 'yes' or 'no'.");
         }
     })
-}
+};
+
+readFile = (z) =>{
+    fs.readFile(dir + '/' + z.trim(), 'utf-8', function(err, content){
+        if (err){
+            console.log(err);
+            console.log('Invalid filename.');
+            console.log(generalSmallInfo);
+        } else {
+            return {filename: z.trim(), content, directory: dir};
+        }
+    })
+};
 
 const fileDetection = () =>{
     console.log(fileDetectionPrompt);
     standard_input.on('data', (data)=> {
 
-        if (data.trim() === 'exit') {
+        if (data.trim().toLowerCase()  === 'exit') {
             exit();
         }
 
-        var extension = data.trim().split(".")[data.trim().split(".").length - 1];
+        var extension = data.trim().toLowerCase().split(".")[data.trim().split(".").length - 1];
 
         if (extension === 'js' || extension === 'jsx') {
-            console.log('You typed a JavaScript file name');
 
-            fs.readFile(dir + '/' + data.trim(), 'utf-8', function(err, content){
-                if (err){
-                    console.log(err);
-                    console.log('Invalid filename.');
-                    console.log(generalSmallInfo);
-                } else {
-                    minify({filename: data.trim(), content, directory: dir});
-                }
-            })
+            var obj = readFile(data);
+
+            minify(obj);
 
         } else {
+
             console.log('Input is invalid.');
-            console.log(generalSmallInfo);
+            console.log('Please re-enter file name.');
         }
     })
 
 };
-//
-// const readFiles = (files, data) => {
-//     var promises = files.map(function(_path){
-// //
-//         return new Promise(function(_path, resolve, reject){
-//
-//             var newPath = dir + '/' + data.trim() +'/' + _path;
-//
-//             var isFile = fs.existsSync(newPath) && fs.lstatSync(newPath).isFile();
-//
-//             var extension = _path.split(".")[_path.split(".").length - 1];
-//
-//             if (extension === 'js' || extension === 'jsx'){
-//                 fs.readFile(newPath, 'utf-8', function(err, content){
-//                     if (err){
-//                         console.log(err);
-//                         console.log('Invalid filename.');
-//                         console.log(generalInfo);
-//                     } else {
-//                         console.log('litty');
-//                         console.log(newPath);
-//                         resolve({filename: _path, content});
-//                     }
-//                 })
-//             } else {
-//                 readNestedDirectory(_path);
-//             }
-//
-//             var directory = data.trim().indexOf('/') === 0 ? dir + data.trim() : dir + '/' + data.trim();
-//
-//         }.bind(this, _path));
-//     });
-//
-//     Promise.all(promises).then(function(res){
-//         res.forEach((x)=>{
-//             console.log(x.filename);
-//         })
-//     }).then(()=>{exit()})
-// };
+
+const directoryDetection = () => {
+    console.log(directoryDetectionPrompt);
+    standard_input.on('data', (data)=> {
+
+        if (data.trim().toLowerCase() === 'exit') {
+            exit();
+        }
+
+        var directory = data.trim().indexOf('/') === 0 ? dir + data.trim() : dir + '/' + data.trim();
+        var isDirectory = fs.existsSync(directory) && fs.lstatSync(directory).isDirectory();
+
+        if (isDirectory){
+            fs.readdir(directory, async (err, files) => {
+                if (err) {
+                    console.log(err)
+                } else {
+                    let finalFiles = files.filter((_path)=>{
+                        return _path.split(".")[_path.split(".").length -1] === 'js' ||
+                            _path.split(".")[_path.split(".").length -1] === 'jsx'
+                    });
+
+                    finalFiles = finalFiles.filter((y)=>{return y.split(".")[y.split(".").length -2] !== 'min'});
+
+                    var promises = finalFiles.map(function (_path) {
+                        return new Promise(function (_path, resolve, reject) {
+                            fs.readFile(directory + '/' + _path, 'utf8', function (err, data) {
+                                if (err) {
+                                    console.log(err);
+                                    resolve("");
+                                } else {
+                                    resolve({filename: _path, content: data});
+                                }
+                            });
+                        }.bind(this, _path));
+                    });
+                    Promise.all(promises).then(function (results) {
+                        // results.forEach((obj) => {
+                        //
+                        // });
+                        try {
+                            console.log(results);
+                            exit();
+                        } catch (e) {
+                            console.error(e);
+                            exit();
+                        }
+                    });
+                }
+            });
+        } else {
+            console.log('Input is invalid.');
+            console.log('Please re-enter directory path.');
+        }
+    })
+};
 
 regexAndSemiColons = (str) => {
 
-    var notAtEnd = ['{', '(', ',', ';', ':', '+', '-', '*', '/','&', '|', '`'];
+    var notAtEnd = ['{', '(', ',', ';', ':', '?', '+', '-', '*', '/','&', '|', '`'];
 
     //remove all debuggers and console.logs
     var newStr  = str.split("debugger").join("").replace(/console\.log\(([^)]+)\);/igm, ' ');
@@ -205,7 +211,11 @@ function minify(data){
     var before = content.length;
 
     console.log('********************************************');
-    console.log(`${filename} is being minified.`);
+    if (fileOrDirectory === 'directory'){
+        console.log(`JavaScript files in ${directory} are being minified.`);
+    } else {
+        console.log(`${filename} is being minified.`);
+    }
 
     var str = `${content}`;
     //start logging time for function
@@ -229,7 +239,7 @@ function minify(data){
         let newFileArr = filename.split(".");
         newFileArr.splice(newFileArr.length - 1, 0, '.min.');
         var finalFileName = newFileArr.join("");
-        console.log('New file saved as: ' + finalFileName);
+        console.log('New file saved and can be found in: ' + finalFileName);
         fs.writeFileSync(directory + '/' + finalFileName, str)
         //file written successfully
     } catch (err) {
@@ -237,6 +247,12 @@ function minify(data){
     }
     exit();
 };
+
+finalReadOut = () =>{
+
+};
+
+//HELPERS
 
 percentCalc = (a, b)=>{
   var diff = a - b;
@@ -256,3 +272,35 @@ const exit = () =>{
 
 
 init();
+
+
+// var isDirectory = fs.existsSync(data.trim()) && fs.lstatSync(data.trim()).isDirectory();
+//
+// var isFile = fs.existsSync(data.trim()) && fs.lstatSync(data.trim()).isFile();
+//
+// var extension = data.trim().split(".")[data.trim().split(".").length - 1];
+//
+// if (!isDirectory && isFile){
+//     if (extension === 'js' || extension === 'jsx') {
+//         console.log('You typed a JavaScript file name');
+//         readFiles([data.trim()], data);
+//         // exit()
+//     } else {
+//         console.log(`\n '${data.trim()}' is an INVALID file or file type.`);
+//         console.log(generalInfo);
+//     }
+// } else if (isDirectory) {
+//     var directory = data.trim().indexOf('/') === 0 ? dir + data.trim() : dir + '/' + data.trim();
+//     fs.readdir(directory, async (err, files)=>{
+//         if (err){
+//             console.log('\n' + `'${directory}'` + ' is an INVALID directory.');
+//             console.log(generalInfo);
+//         } else {
+//             console.log(data);
+//             return readFiles(files, data)
+//         }
+//     })
+// } else {
+//     console.log('Neither file nor directory.');
+//     console.log(generalInfo);
+// }
