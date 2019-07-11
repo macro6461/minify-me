@@ -142,9 +142,9 @@ const directoryDetection = () => {
                         }.bind(this, _path));
                     });
                     Promise.all(promises).then(function (results) {
-                        // results.forEach((obj) => {
-                        //
-                        // });
+                        let finalFiles = results.map((obj) => {
+                            minify({filename: obj.filename, directory, content: obj.content })
+                        });
                         try {
                             console.log(results);
                             exit();
@@ -245,7 +245,7 @@ function minify(data){
     } catch (err) {
         console.error(err)
     }
-    exit();
+    // exit();
 };
 
 finalReadOut = () =>{
@@ -274,33 +274,4 @@ const exit = () =>{
 init();
 
 
-// var isDirectory = fs.existsSync(data.trim()) && fs.lstatSync(data.trim()).isDirectory();
-//
 // var isFile = fs.existsSync(data.trim()) && fs.lstatSync(data.trim()).isFile();
-//
-// var extension = data.trim().split(".")[data.trim().split(".").length - 1];
-//
-// if (!isDirectory && isFile){
-//     if (extension === 'js' || extension === 'jsx') {
-//         console.log('You typed a JavaScript file name');
-//         readFiles([data.trim()], data);
-//         // exit()
-//     } else {
-//         console.log(`\n '${data.trim()}' is an INVALID file or file type.`);
-//         console.log(generalInfo);
-//     }
-// } else if (isDirectory) {
-//     var directory = data.trim().indexOf('/') === 0 ? dir + data.trim() : dir + '/' + data.trim();
-//     fs.readdir(directory, async (err, files)=>{
-//         if (err){
-//             console.log('\n' + `'${directory}'` + ' is an INVALID directory.');
-//             console.log(generalInfo);
-//         } else {
-//             console.log(data);
-//             return readFiles(files, data)
-//         }
-//     })
-// } else {
-//     console.log('Neither file nor directory.');
-//     console.log(generalInfo);
-// }
