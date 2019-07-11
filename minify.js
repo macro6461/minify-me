@@ -4,6 +4,7 @@ const fs = require("fs"),
 const dir = path.resolve(__dirname);
 
 var standard_input = process.stdin;
+var standard_output = process.stdout;
 
 standard_input.setEncoding('utf-8');
 
@@ -13,16 +14,16 @@ var fileOrDirectory = 'directory';
 
 var answers = 0;
 
-const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nType exit to leave.\n\n***********************\n";
-const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by //), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.";
+const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nType exit to leave.\n\n***********************\n > ";
+const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by double back slash), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.\n > ";
 
-const directoryDetectionPrompt = "Please type the name of the directory.\nAll JavaScript files in the directory will be minified. \nAll other file types and nested directories will be ignored.";
+const directoryDetectionPrompt = "Please type the name of the directory.\nAll JavaScript files in the directory will be minified. \nAll other file types and nested directories will be ignored. \n > ";
 
-const checkInputForSemiColonFunctionalityPrompt= "Did you want to enable semi-colon appending? This could result in error(s) if you have instances of .then() starting on a new line.\nIf you want to use semi-colon appending, type 'yes', otherwise type 'no'. Typing no means you have included the semi-colons yourself.\nFYI: Adding ' no-semi' or ' semi' to your initial input will enable semi-colon appending from the getgo and skip this prompt.\n Example: 'file no-semi' or 'directory no-semi";
+const checkInputForSemiColonFunctionalityPrompt= "Did you want to enable semi-colon appending? This could result in error(s) if you have instances of .then() starting on a new line.\nIf you want to use semi-colon appending, type 'yes', otherwise type 'no'. Typing no means you have included the semi-colons yourself.\nFYI: Adding ' no-semi' or ' semi' to your initial input will enable semi-colon appending from the getgo and skip this prompt.\n Example: 'file no-semi' or 'directory no-semi\n > ";
 
 const init = () => {
 
-    console.log(generalSmallInfo);
+    standard_output.write(generalSmallInfo);
 
     standard_input.on('data', (data)=> {
         if (answers === 0){
@@ -32,35 +33,35 @@ const init = () => {
                 fileOrDirectory = 'file';
                 var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
                 answers += 2;
-                console.log(output);
+                standard_output.write(output);
             } else if (data.trim().toLowerCase()  === 'file semi') {
                 fileOrDirectory = 'file';
                 var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
                 withSemiColons = true;
                 answers += 2;
-                console.log(output);
+                standard_output.write(output);
             } else if (data.trim().toLowerCase()  === 'file'){
                 fileOrDirectory = 'file';
-                console.log(checkInputForSemiColonFunctionalityPrompt);
+                standard_output.write(checkInputForSemiColonFunctionalityPrompt);
                 answers += 1;
             } else if (data.trim().toLowerCase()  === 'directory'){
                 fileOrDirectory = 'directory';
-                console.log(checkInputForSemiColonFunctionalityPrompt);
+                standard_output.write(checkInputForSemiColonFunctionalityPrompt);
                 answers += 1;
             } else if (data.trim().toLowerCase()  === 'directory no-semi'){
                 fileOrDirectory = 'directory';
                 var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
                 answers += 2;
-                console.log(output);
+                standard_output.write(output);
             } else if (data.trim().toLowerCase()  === 'directory semi'){
                 fileOrDirectory = 'directory';
                 var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
                 withSemiColons = true;
                 answers += 2;
-                console.log(output);
+                standard_output.write(output);
             } else {
-                console.log('Input is invalid.');
-                console.log(generalSmallInfo);
+                standard_output.write('Input is invalid.');
+                standard_output.write(generalSmallInfo);
             }
         } else if (answers === 1){
             var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
@@ -69,14 +70,14 @@ const init = () => {
                 exit();
             } else if (data.trim().toLowerCase()  === 'yes') {
                 withSemiColons = true;
-                console.log(output);
+                standard_output.write(output);
                 answers += 1;
             } else if (data.trim().toLowerCase()  === 'no') {
-                console.log(output);
+                standard_output.write(output);
                 answers += 1;
             } else {
-                console.log('Input is invalid.');
-                console.log("Please type 'yes' or 'no'.");
+                standard_output.write('Input is invalid.\n');
+                standard_output.write("Please type 'yes' or 'no'.");
             }
         } else if (answers === 2){
             var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
@@ -84,12 +85,12 @@ const init = () => {
                 answers = 0;
                 exit();
             } else if (fileOrDirectory === 'file') {
-                var extension = data.trim().toLowerCase().split(".")[data.trim().split(".").length - 1];
-                if (extension === 'js' || extension === 'jsx') {
+                var extension = path.extname(data.trim());
+                if (extension === '.js' || extension === '.jsx') {
                     fs.readFile(dir + '/' + data.trim(), 'utf-8', function(err, content){
                         if (err){
                             console.log(err);
-                            console.log('Invalid filename.');
+                            console.log('Invalid filename.\n');
                             console.log(generalSmallInfo);
                             exit();
                         } else {
@@ -104,7 +105,7 @@ const init = () => {
                         }
                     })
                 } else {
-                    console.log('Input is invalid.');
+                    console.log('Input is invalid.\n');
                     console.log('Please re-enter file name.');
                 }
             } else if (fileOrDirectory === 'directory'){
@@ -143,11 +144,6 @@ const init = () => {
                                 console.log(`All JavaScript files in ${directory} are being minified.`);
                                 try {
                                     let evaluated = evalAndWrite(results, directory);
-                                    // var timeEnd = process.hrtime()[1]/1000000;
-                                    // var time = timeEnd - timeStart;
-                                    // const {filename, directory, before, after, percentage } = evaluated;
-                                    // finalReadOut(filename, directory, time, before, after, percentage)
-                                    // exit();
                                 } catch (e) {
                                     console.error(e);
                                     exit();
@@ -157,11 +153,11 @@ const init = () => {
                     });
                 } else {
                     console.log('Input is invalid.');
-                    console.log('Please re-enter directory path.');
+                    standard_output.write('Please re-enter directory path. \n > ');
                 }
             } else {
                 console.log('Input is invalid.');
-                console.log(output);
+                standard_output.write(output);
             }
         } else if (answers === 3){
             exit();
@@ -176,8 +172,9 @@ minify = (data) =>{
     var before = content.length;
 
     var str = `${content}`;
-    //start logging time for function
     //remove comments, add semicolons
+    //this will also remove these when they are in strings (can result in error).
+    //need to create solution for debuggers and // in strings.
     str = regexAndSemiColons(str);
 
     var after = str.length;
@@ -228,7 +225,7 @@ evalAndWrite = (x, y) =>{
 
 finalReadOut = (filename, directory, time, before, after, percentage, str) =>{
     if (fileOrDirectory === 'file'){
-        console.log(`Minification complete after ${Math.ceil(time)/100} milliseconds.`);
+        console.log(`Minification complete after ${Math.round(100*time)/100} milliseconds.`);
         console.log('size BEFORE: ' + before);
         console.log('size AFTER: ' + after);
         console.log('Minification resulted in: ' + percentage + '.');
@@ -254,7 +251,7 @@ finalReadOut = (filename, directory, time, before, after, percentage, str) =>{
         } else {
             filesString = filename.join(", ");
         }
-        console.log(`Minification complete after ${Math.ceil(time)/100} milliseconds.`);
+        console.log(`Minification complete after ${Math.round(100*time)/100} milliseconds.`);
         console.log('Files minified: ' + filesString);
         console.log('size of all combined files BEFORE: ' + before);
         console.log('size of all combined files AFTER: ' + after);
@@ -269,8 +266,14 @@ regexAndSemiColons = (str) => {
 
     var notAtEnd = ['{', '(', ',', ';', ':', '?', '+', '-', '*', '/','&', '|', '`'];
 
+    // .replace(/(?!\B"[^"]*)(\/)\/.*(?![^"]*"\B)/g, " ") // for removing comments.
+
+    console.log(str.replace(/(?!\B"[^"]*)debugger(?![^"]*"\B)/g, " ").replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " "));
+
+    // exit();
+
     //remove all debuggers and console.logs
-    var newStr  = str.split("debugger").join("").replace(/console\.log\(([^)]+)\);/igm, ' ');
+    var newStr  = str.replace(/(?!\B"[^"]*)debugger(?![^"]*"\B)/g, "").replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " ");
     /*use regex to remove '//...' (comment), '\r\n' and '\n' (line breaks), and replace with '\r'. Then split it at every new line break.*/
     var strArr = newStr.replace(/(\/)\/.*/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
 

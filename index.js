@@ -29,6 +29,8 @@ const currentSlide = (n) => {//here is an unnecessary
 };
 
 const showSlides = (n) => {
+    var debug = "debugger";
+    var cL = 'console.log()';
     var i;//here is an unnecessary
     var slides = document.getElementsByClassName("mySlides")
     if (n > slides.length) {slideIndex = 1}
@@ -39,7 +41,7 @@ const showSlides = (n) => {
     slides[slideIndex-1].style.display = "block"
 };
 
-var slideIndex = 1//here is an unnecessary
+var slideIndex = 1; //here is an unnecessary
 
 document.addEventListener('DOMContentLoaded',addHtmlAsStrings);//here is an unnecessary
 
