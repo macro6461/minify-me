@@ -15,7 +15,7 @@ var fileOrDirectory = 'directory';
 var answers = 0;
 
 const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nType exit to leave.\n\n***********************\n > ";
-const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by double back slash), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.\n > ";
+const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by //), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.\n > ";
 
 const directoryDetectionPrompt = "Please type the name of the directory.\nAll JavaScript files in the directory will be minified. \nAll other file types and nested directories will be ignored. \n > ";
 
@@ -267,15 +267,17 @@ regexAndSemiColons = (str) => {
     var notAtEnd = ['{', '(', ',', ';', ':', '?', '+', '-', '*', '/','&', '|', '`'];
 
     // .replace(/(?!\B"[^"]*)(\/)\/.*(?![^"]*"\B)/g, " ") // for removing comments.
-
-    console.log(str.replace(/(?!\B"[^"]*)debugger(?![^"]*"\B)/g, " ").replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " "));
+//.replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " "));
+//     console.log(str.replace(/debugger+(?=([^"]*"[^"]*")*[^"]*$)/g, ""));
 
     // exit();
 
     //remove all debuggers and console.logs
-    var newStr  = str.replace(/(?!\B"[^"]*)debugger(?![^"]*"\B)/g, "").replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " ");
+    var newStr  = str.replace(/debugger+(?=([^"]*"[^"]*")*[^"]*$)/g, "").replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " ");
     /*use regex to remove '//...' (comment), '\r\n' and '\n' (line breaks), and replace with '\r'. Then split it at every new line break.*/
-    var strArr = newStr.replace(/(\/)\/.*/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
+    var strArr = newStr.replace(/(\/\/.*)+(?=([^"]*"[^"]*")*[^"]*$)/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
+
+    //(\/)+(?=([^"]*"[^"]*")*[^"]*$)
 
     /*Map over strArr and evaluate where to put ';'*/
 

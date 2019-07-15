@@ -12,7 +12,7 @@ const addHtmlAsStrings = () => {
     debugger
 //here is an unnecessary
 
-
+var deb = "debugger";
     //CHECK OUT THE LACK OF SEMICOLONS YO
 
     console.log('yes')//here is an unnecessary
