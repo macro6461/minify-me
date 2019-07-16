@@ -18,6 +18,18 @@ var deb = "debugger";
     console.log('yes')//here is an unnecessary
     debugger
 };
+//TESTING SINGLE QUOTES
+var debbie = 'debugger';
+
+//testing if debuggers in console.logs can be removed!
+console.log('debugger');
+console.log("debugger");
+
+console.log('console.log()');
+
+var commentsInDouble = "//";
+var commentsInSingle = '//';
+
 
 const plusSlides = (n) => {
     //SOMETIMES WE HAVE SOME SEMI COLONS TO PROVE SCRIPT DOESN'T ADD UNNECESSARY SEMI COLONS WHICH WOULD ALSO RESULT IN ERROR

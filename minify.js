@@ -14,7 +14,8 @@ var fileOrDirectory = 'directory';
 
 var answers = 0;
 
-const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nType exit to leave.\n\n***********************\n > ";
+const generalSmallInfo = "\n***********************\n\nPlease type 'file' or 'directory'. \nYou may additionally type either 'semi' or 'no-semi' to specificy semi colon appending, as well as the file/directory name for express minification. \nType exit to leave.\n\n***********************\n > ";
+
 const fileDetectionPrompt = "Please type the name of the JavaScript file, including '.js' or '.jsx', you would like to minify.\nIf it is in a directory/nested directory, please type full path ahead of file name.\nMinifying this file will remove:\nwhitespace, console.logs, debuggers, comments (marked by //), as well as add semi colons for you.\nUnfortunately, multi-line comments (marked by /* */) is not yet supported.\n > ";
 
 const directoryDetectionPrompt = "Please type the name of the directory.\nAll JavaScript files in the directory will be minified. \nAll other file types and nested directories will be ignored. \n > ";
@@ -29,6 +30,38 @@ const init = () => {
         if (answers === 0){
             if (data.trim().toLowerCase() === 'exit') {
                 exit();
+            } else if (data.trim().toLowerCase().includes('file semi') && data.trim().length > 13) {
+                fileOrDirectory = 'file';
+                withSemiColons = true;
+                readFile(data.trim().split(" ")[data.trim().split(" ").length - 1]);
+            } else if (data.trim().toLowerCase().includes('file no-semi') && data.trim().length > 13){
+                fileOrDirectory = 'file';
+                readFile(data.trim().split(" ")[data.trim().split(" ").length - 1]);
+            } else if (data.trim().toLowerCase().includes('directory semi') && data.trim().length > 13){
+                withSemiColons = true;
+                var directory = data.trim().indexOf('/') === 0 ? dir + data.trim().split(" ")[data.trim().split(" ").length - 1] : dir + '/' + data.trim().split(" ")[data.trim().split(" ").length - 1];
+                var isDirectory = fs.existsSync(directory) && fs.lstatSync(directory).isDirectory();
+                if (isDirectory){
+                    readDirectory(directory);
+                } else {
+                    console.log('Input is invalid.');
+                    standard_output.write('Please re-enter directory path. \n > ');
+                }
+            } else if (data.trim().toLowerCase().includes('directory no-semi') && data.trim().length > 13){
+                var directory = data.trim().indexOf('/') === 0 ? dir + data.trim() : dir + '/' + data.trim();
+                var isDirectory = fs.existsSync(directory) && fs.lstatSync(directory).isDirectory();
+                if (isDirectory){
+                    readDirectory(directory);
+                } else {
+                    console.log('Input is invalid.');
+                    standard_output.write('Please re-enter directory path. \n > ');
+                }
+            } else if (data.trim().toLowerCase()  === 'file semi') {
+                fileOrDirectory = 'file';
+                var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
+                withSemiColons = true;
+                answers += 2;
+                standard_output.write(output);
             } else if (data.trim().toLowerCase() === 'file no-semi') {
                 fileOrDirectory = 'file';
                 var output = fileOrDirectory === 'file' ? fileDetectionPrompt : directoryDetectionPrompt;
@@ -87,23 +120,7 @@ const init = () => {
             } else if (fileOrDirectory === 'file') {
                 var extension = path.extname(data.trim());
                 if (extension === '.js' || extension === '.jsx') {
-                    fs.readFile(dir + '/' + data.trim(), 'utf-8', function(err, content){
-                        if (err){
-                            console.log(err);
-                            console.log('Invalid filename.\n');
-                            console.log(generalSmallInfo);
-                            exit();
-                        } else {
-                            console.log('********************************************');
-                            console.log(`${data.trim()} is being minified.`);
-                            var timeStart = process.hrtime()[1]/1000000;
-                            var final = minify({filename: data.trim(), content, directory: dir});
-                            var timeEnd = process.hrtime()[1]/1000000;
-                            var time = timeEnd - timeStart;
-                            const {filename, directory, before, after, percentage, str } = final;
-                            finalReadOut(filename, directory, time, before, after, percentage, str)
-                        }
-                    })
+                    readFile(data.trim());
                 } else {
                     console.log('Input is invalid.\n');
                     console.log('Please re-enter file name.');
@@ -114,43 +131,7 @@ const init = () => {
                 var isDirectory = fs.existsSync(directory) && fs.lstatSync(directory).isDirectory();
 
                 if (isDirectory){
-                    fs.readdir(directory, async (err, files) => {
-                        if (err) {
-                            console.log(err)
-                        } else {
-
-                            let finalFiles = files.filter((_path)=>{
-                                return _path.split(".")[_path.split(".").length -1] === 'js' ||
-                                    _path.split(".")[_path.split(".").length -1] === 'jsx'
-                            });
-
-                            finalFiles = finalFiles.filter((y)=>{return y.split(".")[y.split(".").length -2] !== 'min'});
-
-                            var promises = finalFiles.map(function (_path) {
-                                return new Promise(function (_path, resolve, reject) {
-                                    fs.readFile(directory + '/' + _path, 'utf8', function (err, data) {
-                                        if (err) {
-                                            console.log(err);
-                                            resolve("");
-                                        } else {
-                                            resolve({filename: _path, content: data});
-                                        }
-                                    });
-                                }.bind(this, _path));
-                            });
-
-                            Promise.all(promises).then(function (results) {
-                                console.log('********************************************');
-                                console.log(`All JavaScript files in ${directory} are being minified.`);
-                                try {
-                                    let evaluated = evalAndWrite(results, directory);
-                                } catch (e) {
-                                    console.error(e);
-                                    exit();
-                                }
-                            });
-                        }
-                    });
+                    readDirectory(directory);
                 } else {
                     console.log('Input is invalid.');
                     standard_output.write('Please re-enter directory path. \n > ');
@@ -159,13 +140,73 @@ const init = () => {
                 console.log('Input is invalid.');
                 standard_output.write(output);
             }
-        } else if (answers === 3){
+        } else if (answers > 3){
             exit();
         }
     })
 };
 
 ////////////////////////HELPERS
+
+readFile = (data) =>{
+    fs.readFile(dir + '/' + data, 'utf-8', function(err, content){
+        if (err){
+            console.log(err);
+            console.log('Invalid filename.\n');
+            console.log(generalSmallInfo);
+            exit();
+        } else {
+            console.log('********************************************');
+            console.log(`${data} is being minified.`);
+            var timeStart = process.hrtime()[1]/1000000;
+            var final = minify({filename: data, content, directory: dir});
+            var timeEnd = process.hrtime()[1]/1000000;
+            var time = timeEnd - timeStart;
+            const {filename, directory, before, after, percentage, str } = final;
+            finalReadOut(filename, directory, time, before, after, percentage, str)
+        }
+    })
+}
+
+readDirectory = (directory) =>{
+    fs.readdir(directory, async (err, files) => {
+        if (err) {
+            console.log(err)
+        } else {
+
+            let finalFiles = files.filter((_path)=>{
+                return _path.split(".")[_path.split(".").length -1] === 'js' ||
+                    _path.split(".")[_path.split(".").length -1] === 'jsx'
+            });
+
+            finalFiles = finalFiles.filter((y)=>{return y.split(".")[y.split(".").length -2] !== 'min'});
+
+            var promises = finalFiles.map(function (_path) {
+                return new Promise(function (_path, resolve, reject) {
+                    fs.readFile(directory + '/' + _path, 'utf8', function (err, data) {
+                        if (err) {
+                            console.log(err);
+                            resolve("");
+                        } else {
+                            resolve({filename: _path, content: data});
+                        }
+                    });
+                }.bind(this, _path));
+            });
+
+            Promise.all(promises).then(function (results) {
+                console.log('********************************************');
+                console.log(`All JavaScript files in ${directory} are being minified.`);
+                try {
+                    let evaluated = evalAndWrite(results, directory);
+                } catch (e) {
+                    console.error(e);
+                    exit();
+                }
+            });
+        }
+    });
+}
 
 minify = (data) =>{
     const {filename, directory, content} = data;
@@ -224,6 +265,7 @@ evalAndWrite = (x, y) =>{
 }
 
 finalReadOut = (filename, directory, time, before, after, percentage, str) =>{
+    console.log(filename);
     if (fileOrDirectory === 'file'){
         console.log(`Minification complete after ${Math.round(100*time)/100} milliseconds.`);
         console.log('size BEFORE: ' + before);
@@ -267,15 +309,17 @@ regexAndSemiColons = (str) => {
     var notAtEnd = ['{', '(', ',', ';', ':', '?', '+', '-', '*', '/','&', '|', '`'];
 
     // .replace(/(?!\B"[^"]*)(\/)\/.*(?![^"]*"\B)/g, " ") // for removing comments.
-//.replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " "));
-//     console.log(str.replace(/debugger+(?=([^"]*"[^"]*")*[^"]*$)/g, ""));
+    //.replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " "));
 
     // exit();
 
     //remove all debuggers and console.logs
-    var newStr  = str.replace(/debugger+(?=([^"]*"[^"]*")*[^"]*$)/g, "").replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " ");
+    var newStr  = str.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|\bdebugger\b/g, '$1')
+    debugger
+        newStr = newStr.replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " ")
+    var strArr = newStr.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|(\/\/.*)/g, '$1').replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/)
     /*use regex to remove '//...' (comment), '\r\n' and '\n' (line breaks), and replace with '\r'. Then split it at every new line break.*/
-    var strArr = newStr.replace(/(\/\/.*)+(?=([^"]*"[^"]*")*[^"]*$)/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
+    // var strArr = newStr.replace(/(\/\/.*)+(?=([^"]*"[^"]*")*[^"]*$)/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
 
     //(\/)+(?=([^"]*"[^"]*")*[^"]*$)
 
