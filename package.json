@@ -14,5 +14,10 @@
   "homepage": "https://github.com/macro6461/minify-me#readme",
   "bugs": {
     "url": "https://github.com/macro6461/minify-me/issues"
-  }
+  },
+  "main": "",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": []
 }

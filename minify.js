@@ -153,7 +153,7 @@ readFile = (data) =>{
         if (err){
             console.log(err);
             console.log('Invalid filename.\n');
-            console.log(generalSmallInfo);
+            // console.log(generalSmallInfo);
             exit();
         } else {
             console.log('********************************************');
