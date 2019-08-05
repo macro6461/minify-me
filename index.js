@@ -30,6 +30,11 @@ console.log('console.log()');
 var commentsInDouble = "//";
 var commentsInSingle = '//';
 
+//testing for console.log as variable.
+var console = "console.log('yes')";
+
+console.log('yes')
+
 
 const plusSlides = (n) => {
     //SOMETIMES WE HAVE SOME SEMI COLONS TO PROVE SCRIPT DOESN'T ADD UNNECESSARY SEMI COLONS WHICH WOULD ALSO RESULT IN ERROR
@@ -40,11 +45,19 @@ const currentSlide = (n) => {//here is an unnecessary
     showSlides(slideIndex = n);
 };
 
+var semiStr = ';;;; ; ; '
+var semiDoubleStr = ";;;; ; ; "
+
 const showSlides = (n) => {
+    /* HERE
+    IS A MULTILINE
+
+    COMMENT
+     */
     var debug = "debugger";
     var cL = 'console.log()';
     var i;//here is an unnecessary
-    var slides = document.getElementsByClassName("mySlides")
+    var slides = document.getElementsByClassName("mySlides");
     if (n > slides.length) {slideIndex = 1}
     if (n < 1) {slideIndex = slides.length}
     for (i = 0; i < slides.length; i++) {
@@ -52,6 +65,8 @@ const showSlides = (n) => {
     }
     slides[slideIndex-1].style.display = "block"
 };
+
+var multiLine = "/* HERE IS A MULTILINE COMMENT */";
 
 var slideIndex = 1; //here is an unnecessary
 

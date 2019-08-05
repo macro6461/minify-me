@@ -306,22 +306,19 @@ finalReadOut = (filename, directory, time, before, after, percentage, str) =>{
 
 regexAndSemiColons = (str) => {
 
+    //NEWGOAL anything inside quotes are to be left alone.
+
     var notAtEnd = ['{', '(', ',', ';', ':', '?', '+', '-', '*', '/','&', '|', '`'];
 
-    // .replace(/(?!\B"[^"]*)(\/)\/.*(?![^"]*"\B)/g, " ") // for removing comments.
-    //.replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " "));
-
-    // exit();
+    //once file is all on one line, remove /**/ by using variation of below expressions
+    //str.replace(/\n/g, " ").replace(/\/\*.*\*\//g, " ").replace(/\s+/g, " ").trim()
 
     //remove all debuggers and console.logs
-    var newStr  = str.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|\bdebugger\b/g, '$1')
-    debugger
-        newStr = newStr.replace(/(?!\B"[^"]*)console.log\(([^)]+)\)(?![^"]*"\B)/igm, " ")
-    var strArr = newStr.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|(\/\/.*)/g, '$1').replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/)
-    /*use regex to remove '//...' (comment), '\r\n' and '\n' (line breaks), and replace with '\r'. Then split it at every new line break.*/
-    // var strArr = newStr.replace(/(\/\/.*)+(?=([^"]*"[^"]*")*[^"]*$)/g,"").replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
-
-    //(\/)+(?=([^"]*"[^"]*")*[^"]*$)
+    str = str.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|\bdebugger\b/g, '$1')
+    str = str.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|console\.log\((.+)\)/g, '$1')
+    str = str.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|(\/\/.*)/g, '$1')
+    // var strArr = str.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|\/\*(.*)\*\//g, '$1').replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/)
+    var strArr = str.replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/)
 
     /*Map over strArr and evaluate where to put ';'*/
 
@@ -340,7 +337,7 @@ regexAndSemiColons = (str) => {
 
             /*if array.length is 0, ignore it, otherwise check if the last element is one of the notAtEnd items and if it is, don't add ';'. Otherwise do so.*/
             if (minArr.length > 0 && !notAtEnd.includes(minArr[minArr.length -1])){
-                minArr.push(';');
+                    minArr.push(';');
             }
 
             var final = minArr.join("");
@@ -349,10 +346,10 @@ regexAndSemiColons = (str) => {
     } else {
         finalStr = strArr.join("");
     }
+    // finalStr = finalStr.replace(/((?:^|[^\/])(?:\\{2})*"[^"\\]*(?:\\[\s\S][^"\\]*)*"|'[^'\\]*(?:\\[\s\S][^'\\]*)*')|\/\*(.*)\*\//g, '$1').replace(/\s+/g, " ")
 
-    finalStr = finalStr.replace(/\s+/g, ' ');
-
-    return finalStr;
+    //does not work when semi colons are in strings.
+    return finalStr.replace(/\s\s+/g, ' ').replace(/;{2,}|; {1,};/g, ';').trim();
 };
 
 percentCalc = (a, b)=>{
